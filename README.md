@@ -175,10 +175,8 @@ Distributed under the MIT License. See `LICENSE` for details.
 
 ## Developer
 
-**Adarsh Sharma**
+**Adarsh Arpit**
 Computer Science Engineering (Cybersecurity)
-
-Interested in software development, cybersecurity, cloud computing, and UI/UX design.
 
 [GitHub](https://github.com/ADARSH11aa)
 
