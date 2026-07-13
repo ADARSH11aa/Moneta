@@ -19,7 +19,7 @@ import {
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyBIdIuUbxRI9n7TFz3qs6lzfMyIcT0EJ7s",
+  apiKey: "AIzaSyC-I-QT2IuCVu9WL-WKCnS3m8zg6xaEvCg",
   authDomain: "pocketledger-62aad.firebaseapp.com",
   projectId: "pocketledger-62aad",
   storageBucket: "pocketledger-62aad.firebasestorage.app",
