@@ -1,31 +1,31 @@
 import { initializeApp } from "firebase/app";
-import { 
-  getFirestore, 
-  doc, 
-  setDoc, 
-  getDoc, 
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
   serverTimestamp
 } from "firebase/firestore";
-import { 
-  getAuth, 
-  signInWithPopup, 
+import {
+  getAuth,
+  signInWithPopup,
   GoogleAuthProvider,
   OAuthProvider,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  onAuthStateChanged, 
-  signOut 
+  onAuthStateChanged,
+  signOut
 } from "firebase/auth";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyC-I-QT2IuCVu9WL-WKCnS3m8zg6xaEvCg",
-  authDomain: "pocketledger-62aad.firebaseapp.com",
-  projectId: "pocketledger-62aad",
-  storageBucket: "pocketledger-62aad.firebasestorage.app",
-  messagingSenderId: "584138167361",
-  appId: "1:584138167361:web:a58e474fdd17eb559ae2c0",
-  measurementId: "G-1QX9T2FHPZ"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 // Initialize Firebase
@@ -35,18 +35,18 @@ const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 const appleProvider = new OAuthProvider('apple.com');
 
-export { 
+export {
   auth,
-  db, 
+  db,
   googleProvider,
   appleProvider,
   signInWithPopup,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  onAuthStateChanged, 
+  onAuthStateChanged,
   signOut,
-  doc, 
-  setDoc, 
-  getDoc, 
+  doc,
+  setDoc,
+  getDoc,
   serverTimestamp
 };
