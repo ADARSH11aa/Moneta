@@ -1,40 +1,35 @@
 import React, { useMemo } from 'react';
-
 import { useTransactions } from '../context/TransactionContext';
 import { useFinance } from '../context/FinanceContext';
-import { ArrowRight, TrendingUp, TrendingDown, Calendar, AlertCircle } from 'lucide-react';
+import { useLedger } from '../context/LedgerContext';
+import { ArrowRight, TrendingUp, TrendingDown, Calendar, AlertCircle, PiggyBank, Target } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { isThisMonth } from 'date-fns';
+import { format, parse } from 'date-fns';
 
 const DashboardPage: React.FC = () => {
   const { transactions } = useTransactions();
   const { settings, subscriptions } = useFinance();
+  const { profile, activeMonth } = useLedger();
 
-  const fmt = (n: number) => '₹' + Math.round(n).toLocaleString('en-IN');
+  const fmt = (n: number) => '₹' + Math.round(n || 0).toLocaleString('en-IN');
+  const monthName = activeMonth ? format(parse(activeMonth, 'yyyy-MM', new Date()), 'MMMM yyyy') : '';
 
-  const { expense, overallExpense, recentTxns, effectiveBudget, remainingBudget } = useMemo(() => {
+  const { income, expense, recentTxns, effectiveBudget, remainingBudget } = useMemo(() => {
+    let inc = 0;
     let exp = 0;
-    let overallExp = 0;
     
     transactions.forEach(t => {
-      if (t.type === 'expense') {
-        overallExp += t.amount;
-      }
-    });
-
-    const thisMonthTxns = transactions.filter(t => isThisMonth(new Date(t.date)));
-    thisMonthTxns.forEach(t => {
+      if (t.type === 'income') inc += t.amount;
       if (t.type === 'expense') exp += t.amount;
     });
-
 
     const effBudget = (settings.globalBudget || 0) + (settings.extraBudget || 0);
     const remBudget = effBudget - exp;
 
     return { 
+      income: inc,
       expense: exp,
-      overallExpense: overallExp,
-      recentTxns: transactions.slice(0, 5),
+      recentTxns: transactions.slice(0, 5), // Assuming transactions are already sorted desc
       effectiveBudget: effBudget,
       remainingBudget: remBudget
     };
@@ -49,7 +44,7 @@ const DashboardPage: React.FC = () => {
 
   const topCategory = useMemo(() => {
     const catMap: Record<string, number> = {};
-    transactions.filter(t => isThisMonth(new Date(t.date)) && t.type === 'expense').forEach(t => {
+    transactions.filter(t => t.type === 'expense').forEach(t => {
       catMap[t.category] = (catMap[t.category] || 0) + t.amount;
     });
     const sorted = Object.keys(catMap).sort((a,b) => catMap[b] - catMap[a]);
@@ -58,22 +53,31 @@ const DashboardPage: React.FC = () => {
 
   return (
     <div>
-      <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '32px', margin: '0 0 24px 0' }}>Overview</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '32px', margin: 0 }}>Overview</h1>
+        <div style={{ background: '#f1f5f9', padding: '6px 12px', borderRadius: '20px', fontSize: '14px', fontWeight: 600, color: '#475569' }}>
+          {monthName}
+        </div>
+      </div>
       
       {/* Top Metrics */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '24px' }}>
         <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <p style={{ color: '#64748b', margin: '0 0 4px 0', fontSize: '13px', fontWeight: 600 }}>Monthly Income</p>
+          <h2 style={{ margin: 0, fontSize: '24px', color: '#10b981', display: 'flex', alignItems: 'center', gap: '6px' }}><TrendingUp size={20} /> {fmt(income)}</h2>
+        </div>
+        <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <p style={{ color: '#64748b', margin: '0 0 4px 0', fontSize: '13px', fontWeight: 600 }}>Monthly Expense</p>
+          <h2 style={{ margin: 0, fontSize: '24px', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '6px' }}><TrendingDown size={20} /> {fmt(expense)}</h2>
+        </div>
+        <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
           <p style={{ color: '#64748b', margin: '0 0 4px 0', fontSize: '13px', fontWeight: 600 }}>Remaining Budget</p>
-          <h2 style={{ margin: 0, fontSize: '24px', color: remainingBudget >= 0 ? '#10b981' : '#ef4444' }}>{fmt(remainingBudget)}</h2>
+          <h2 style={{ margin: 0, fontSize: '24px', color: remainingBudget >= 0 ? '#10b981' : '#ef4444', display: 'flex', alignItems: 'center', gap: '6px' }}><Target size={20} /> {fmt(remainingBudget)}</h2>
           <span style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>Base + Extra ({fmt(effectiveBudget)})</span>
         </div>
         <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <p style={{ color: '#64748b', margin: '0 0 4px 0', fontSize: '13px', fontWeight: 600 }}>Extra Budget</p>
-          <h2 style={{ margin: 0, fontSize: '24px', color: '#3b82f6', display: 'flex', alignItems: 'center', gap: '6px' }}><TrendingUp size={20} /> {fmt(settings.extraBudget || 0)}</h2>
-        </div>
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <p style={{ color: '#64748b', margin: '0 0 4px 0', fontSize: '13px', fontWeight: 600 }}>Total Expense (All Time)</p>
-          <h2 style={{ margin: 0, fontSize: '24px', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '6px' }}><TrendingDown size={20} /> {fmt(overallExpense)}</h2>
+          <p style={{ color: '#64748b', margin: '0 0 4px 0', fontSize: '13px', fontWeight: 600 }}>Lifetime Savings</p>
+          <h2 style={{ margin: 0, fontSize: '24px', color: '#3b82f6', display: 'flex', alignItems: 'center', gap: '6px' }}><PiggyBank size={20} /> {fmt(profile?.lifetimeSavings || 0)}</h2>
         </div>
       </div>
 
@@ -86,7 +90,7 @@ const DashboardPage: React.FC = () => {
               <Link to="/transactions" style={{ color: '#3b82f6', textDecoration: 'none', fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>View All <ArrowRight size={14} /></Link>
             </div>
             {recentTxns.length === 0 ? (
-              <p style={{ color: '#64748b' }}>No transactions yet.</p>
+              <p style={{ color: '#64748b' }}>No transactions this month.</p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {recentTxns.map(t => (

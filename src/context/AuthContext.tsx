@@ -47,6 +47,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email: user.email,
         displayName: user.displayName || user.email?.split('@')[0],
         createdAt: serverTimestamp(),
+        lastActiveMonth: '',
+        lifetimeSavings: 0,
       });
     }
   };

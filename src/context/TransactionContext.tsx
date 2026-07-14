@@ -1,8 +1,9 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { db } from '../firebase/firebase';
-import { collection, query, onSnapshot, doc, setDoc, deleteDoc, serverTimestamp, orderBy } from 'firebase/firestore';
+import { collection, query, onSnapshot, doc, setDoc, deleteDoc, serverTimestamp, orderBy, increment } from 'firebase/firestore';
 import { useAuth } from './AuthContext';
+import { useLedger } from './LedgerContext';
 import type { Transaction, Shortcut } from '../types';
 
 interface TransactionContextType {
@@ -10,8 +11,8 @@ interface TransactionContextType {
   shortcuts: Shortcut[];
   loading: boolean;
   addTransaction: (txn: Omit<Transaction, 'id' | 'createdAt'>) => Promise<void>;
-  updateTransaction: (id: string, txn: Partial<Transaction>) => Promise<void>;
-  deleteTransaction: (id: string) => Promise<void>;
+  updateTransaction: (id: string, txn: Partial<Transaction>, oldTxn?: Transaction) => Promise<void>;
+  deleteTransaction: (id: string, oldTxn: Transaction) => Promise<void>;
   duplicateTransaction: (id: string) => Promise<void>;
   addShortcut: (shortcut: Omit<Shortcut, 'id'>) => Promise<void>;
   updateShortcut: (id: string, shortcut: Partial<Shortcut>) => Promise<void>;
@@ -30,19 +31,21 @@ export const useTransactions = () => {
 
 export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentUser } = useAuth();
+  const { activeMonth, refreshMonths } = useLedger();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [shortcuts, setShortcuts] = useState<Shortcut[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!currentUser) {
+    if (!currentUser || !activeMonth) {
       setTransactions([]);
       setShortcuts([]);
       setLoading(false);
       return;
     }
 
-    const txnsRef = collection(db, 'users', currentUser.uid, 'transactions');
+    // Now listen to the active month's transactions
+    const txnsRef = collection(db, 'users', currentUser.uid, 'months', activeMonth, 'transactions');
     const qTxn = query(txnsRef, orderBy('date', 'desc'));
     
     const unsubTxn = onSnapshot(qTxn, (snapshot) => {
@@ -63,31 +66,61 @@ export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({ c
       unsubTxn();
       unsubShort();
     };
-  }, [currentUser]);
+  }, [currentUser, activeMonth]);
 
   const addTransaction = async (txn: Omit<Transaction, 'id' | 'createdAt'>) => {
-    if (!currentUser) return;
-    const newRef = doc(collection(db, 'users', currentUser.uid, 'transactions'));
+    if (!currentUser || !activeMonth) return;
+    const newRef = doc(collection(db, 'users', currentUser.uid, 'months', activeMonth, 'transactions'));
+    
     await setDoc(newRef, {
       ...txn,
       createdAt: serverTimestamp()
     });
+
+    // Update monthly summary
+    const summaryRef = doc(db, 'users', currentUser.uid, 'months', activeMonth);
+    const incAmount = txn.amount;
+    if (txn.type === 'income') {
+      await setDoc(summaryRef, { income: increment(incAmount), savings: increment(incAmount) }, { merge: true });
+    } else if (txn.type === 'expense') {
+      await setDoc(summaryRef, { expense: increment(incAmount), savings: increment(-incAmount) }, { merge: true });
+    }
+    await refreshMonths();
   };
 
-  const updateTransaction = async (id: string, txn: Partial<Transaction>) => {
-    if (!currentUser) return;
-    const ref = doc(db, 'users', currentUser.uid, 'transactions', id);
+  const updateTransaction = async (id: string, txn: Partial<Transaction>, oldTxn?: Transaction) => {
+    if (!currentUser || !activeMonth) return;
+    const ref = doc(db, 'users', currentUser.uid, 'months', activeMonth, 'transactions', id);
     await setDoc(ref, txn, { merge: true });
+
+    if (oldTxn && txn.amount !== undefined) {
+      const summaryRef = doc(db, 'users', currentUser.uid, 'months', activeMonth);
+      const diff = txn.amount - oldTxn.amount;
+      if (oldTxn.type === 'income') {
+        await setDoc(summaryRef, { income: increment(diff), savings: increment(diff) }, { merge: true });
+      } else if (oldTxn.type === 'expense') {
+        await setDoc(summaryRef, { expense: increment(diff), savings: increment(-diff) }, { merge: true });
+      }
+      await refreshMonths();
+    }
   };
 
-  const deleteTransaction = async (id: string) => {
-    if (!currentUser) return;
-    const ref = doc(db, 'users', currentUser.uid, 'transactions', id);
+  const deleteTransaction = async (id: string, oldTxn: Transaction) => {
+    if (!currentUser || !activeMonth) return;
+    const ref = doc(db, 'users', currentUser.uid, 'months', activeMonth, 'transactions', id);
     await deleteDoc(ref);
+
+    const summaryRef = doc(db, 'users', currentUser.uid, 'months', activeMonth);
+    if (oldTxn.type === 'income') {
+      await setDoc(summaryRef, { income: increment(-oldTxn.amount), savings: increment(-oldTxn.amount) }, { merge: true });
+    } else if (oldTxn.type === 'expense') {
+      await setDoc(summaryRef, { expense: increment(-oldTxn.amount), savings: increment(oldTxn.amount) }, { merge: true });
+    }
+    await refreshMonths();
   };
 
   const duplicateTransaction = async (id: string) => {
-    if (!currentUser) return;
+    if (!currentUser || !activeMonth) return;
     const txn = transactions.find(t => t.id === id);
     if (!txn) return;
     

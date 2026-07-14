@@ -74,7 +74,8 @@ const TransactionsPage: React.FC = () => {
     };
 
     if (editingId) {
-      await updateTransaction(editingId, txnData);
+      const oldTxn = transactions.find(t => t.id === editingId);
+      await updateTransaction(editingId, txnData, oldTxn);
     } else {
       await addTransaction(txnData);
     }
@@ -94,7 +95,7 @@ const TransactionsPage: React.FC = () => {
   };
 
   const toggleFavorite = async (txn: any) => {
-    await updateTransaction(txn.id, { isFavorite: !txn.isFavorite });
+    await updateTransaction(txn.id, { isFavorite: !txn.isFavorite }, txn);
   };
 
   const filteredAndSorted = useMemo(() => {
@@ -203,7 +204,7 @@ const TransactionsPage: React.FC = () => {
                     <button onClick={() => toggleFavorite(txn)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}><Star size={16} color={txn.isFavorite ? '#eab308' : '#94a3b8'} /></button>
                     <button onClick={() => duplicateTransaction(txn.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}><Copy size={16} /></button>
                     <button onClick={() => openModal(txn)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}><Edit2 size={16} /></button>
-                    <button onClick={() => deleteTransaction(txn.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#ef4444' }}><Trash2 size={16} /></button>
+                    <button onClick={() => deleteTransaction(txn.id, txn)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#ef4444' }}><Trash2 size={16} /></button>
                   </div>
                 </div>
               </div>

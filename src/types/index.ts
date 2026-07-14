@@ -37,3 +37,19 @@ export interface FinanceSettings {
   totalSavings: number;
   extraBudget?: number;
 }
+
+export interface UserProfile {
+  email: string;
+  displayName: string;
+  createdAt?: any;
+  lastActiveMonth?: string; // YYYY-MM format
+  lifetimeSavings?: number;
+}
+
+export interface MonthlySummary {
+  id: string; // YYYY-MM format
+  income: number;
+  expense: number;
+  budget: number;
+  savings: number;
+}

@@ -14,10 +14,10 @@ import {
 const Sidebar: React.FC = () => {
   const links = [
     { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
+    { name: 'Monthly Ledger', path: '/ledger', icon: <Target size={20} /> },
     { name: 'Transactions', path: '/transactions', icon: <Wallet size={20} /> },
     { name: 'Recurring', path: '/recurring', icon: <Repeat size={20} /> },
     { name: 'Budgets', path: '/budgets', icon: <Target size={20} /> },
-
     { name: 'Reports', path: '/reports', icon: <BarChart3 size={20} /> },
     { name: 'Settings', path: '/settings', icon: <Settings size={20} /> },
   ];

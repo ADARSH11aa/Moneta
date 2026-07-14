@@ -1,25 +1,25 @@
 import React, { useState, useMemo } from 'react';
 import { useFinance } from '../context/FinanceContext';
 import { useTransactions } from '../context/TransactionContext';
+import { useLedger } from '../context/LedgerContext';
 import { Edit2, Target, PiggyBank, Save, X, Plus } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, AreaChart, Area, XAxis, CartesianGrid } from 'recharts';
-import { format, isThisMonth, startOfMonth, eachDayOfInterval } from 'date-fns';
+import { format, startOfMonth, eachDayOfInterval, endOfMonth, parse } from 'date-fns';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'];
 
 const BudgetsPage: React.FC = () => {
   const { settings, updateSettings } = useFinance();
   const { transactions } = useTransactions();
+  const { profile, activeMonth } = useLedger();
   
   const [isEditing, setIsEditing] = useState(false);
   const [budgetVal, setBudgetVal] = useState('');
   const [extraVal, setExtraVal] = useState('');
-  const [savingsVal, setSavingsVal] = useState('');
 
   const handleEdit = () => {
     setBudgetVal(String(settings.globalBudget || 0));
     setExtraVal(String(settings.extraBudget || 0));
-    setSavingsVal(String(settings.totalSavings || 0));
     setIsEditing(true);
   };
 
@@ -27,7 +27,6 @@ const BudgetsPage: React.FC = () => {
     await updateSettings({
       globalBudget: Number(budgetVal),
       extraBudget: Number(extraVal),
-      totalSavings: Number(savingsVal)
     });
     setIsEditing(false);
   };
@@ -35,9 +34,7 @@ const BudgetsPage: React.FC = () => {
   const fmt = (n: number) => '₹' + Math.round(n).toLocaleString('en-IN');
 
   const { spentThisMonth, categoryData, trendData } = useMemo(() => {
-    const thisMonthTxns = transactions.filter(t => isThisMonth(new Date(t.date)));
-    
-    const expenseTxns = thisMonthTxns.filter(t => t.type === 'expense');
+    const expenseTxns = transactions.filter(t => t.type === 'expense');
     const spent = expenseTxns.reduce((sum, t) => sum + t.amount, 0);
 
     const catMap: Record<string, number> = {};
@@ -46,8 +43,14 @@ const BudgetsPage: React.FC = () => {
     });
     const pieData = Object.keys(catMap).map(k => ({ name: k, value: catMap[k] })).sort((a,b) => b.value - a.value);
 
-    // Trend Data
-    const days = eachDayOfInterval({ start: startOfMonth(new Date()), end: new Date() });
+    // Trend Data - scoped to activeMonth
+    const monthDate = activeMonth ? parse(activeMonth, 'yyyy-MM', new Date()) : new Date();
+    const startDate = startOfMonth(monthDate);
+    const endDate = monthDate.getMonth() === new Date().getMonth() && monthDate.getFullYear() === new Date().getFullYear() 
+      ? new Date() 
+      : endOfMonth(monthDate);
+
+    const days = eachDayOfInterval({ start: startDate, end: endDate });
     const areaData = days.map(d => {
       const dStr = format(d, 'yyyy-MM-dd');
       const dSum = expenseTxns.filter(t => t.date === dStr).reduce((s,t) => s + t.amount, 0);
@@ -55,7 +58,7 @@ const BudgetsPage: React.FC = () => {
     });
 
     return { spentThisMonth: spent, categoryData: pieData, trendData: areaData };
-  }, [transactions]);
+  }, [transactions, activeMonth]);
 
   const effectiveBudget = (settings.globalBudget || 0) + (settings.extraBudget || 0);
   const percentage = effectiveBudget > 0 ? Math.min((spentThisMonth / effectiveBudget) * 100, 100) : 0;
@@ -131,15 +134,11 @@ const BudgetsPage: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
             <div style={{ background: 'rgba(255,255,255,0.2)', padding: '12px', borderRadius: '50%' }}><PiggyBank size={24} color="#fff" /></div>
             <div>
-              <p style={{ color: 'rgba(255,255,255,0.8)', margin: '0 0 4px 0', fontSize: '13px', fontWeight: 600 }}>Total Savings Balance</p>
-              {isEditing ? (
-                <input type="number" value={savingsVal} onChange={e => setSavingsVal(e.target.value)} style={{ padding: '8px', borderRadius: '8px', border: 'none', width: '150px', fontSize: '18px', fontWeight: 'bold', background: 'rgba(255,255,255,0.9)' }} />
-              ) : (
-                <h2 style={{ margin: 0, fontSize: '32px' }}>{fmt(settings.totalSavings)}</h2>
-              )}
+              <p style={{ color: 'rgba(255,255,255,0.8)', margin: '0 0 4px 0', fontSize: '13px', fontWeight: 600 }}>Lifetime Savings</p>
+              <h2 style={{ margin: 0, fontSize: '32px' }}>{fmt(profile?.lifetimeSavings || 0)}</h2>
             </div>
           </div>
-          <p style={{ margin: 0, fontSize: '14px', opacity: 0.9 }}>Your liquid emergency funds across all accounts.</p>
+          <p style={{ margin: 0, fontSize: '14px', opacity: 0.9 }}>Your savings accumulated over all months.</p>
         </div>
       </div>
 
