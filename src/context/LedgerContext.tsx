@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
 import { db } from '../firebase/firebase';
-import { doc, getDoc, setDoc, collection, getDocs, updateDoc, writeBatch } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs, updateDoc, writeBatch } from 'firebase/firestore';
 import { format } from 'date-fns';
 import type { UserProfile, MonthlySummary } from '../types';
 
@@ -30,13 +30,13 @@ export const useLedger = () => {
 
 export const LedgerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentUser } = useAuth();
-  
+
   const currentMonthStr = format(new Date(), 'yyyy-MM');
   const [activeMonth, setActiveMonth] = useState<string>(currentMonthStr);
   const [availableMonths, setAvailableMonths] = useState<MonthlySummary[]>([]);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loadingLedger, setLoadingLedger] = useState(true);
-  
+
   const [showWelcomePopup, setShowWelcomePopup] = useState(false);
   const [rolledOverMonth, setRolledOverMonth] = useState<string | null>(null);
 
@@ -60,12 +60,12 @@ export const LedgerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setLoadingLedger(true);
       const userRef = doc(db, 'users', currentUser.uid);
       const userSnap = await getDoc(userRef);
-      
+
       if (!userSnap.exists()) {
         setLoadingLedger(false);
         return;
       }
-      
+
       const userData = userSnap.data() as UserProfile;
       setProfile(userData);
 
@@ -75,7 +75,7 @@ export const LedgerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       } else if (userData.lastActiveMonth < currentMonthStr) {
         await runRollover(currentUser.uid, userData, currentMonthStr);
       }
-      
+
       await refreshMonths();
       setActiveMonth(currentMonthStr); // default active month is current
       setLoadingLedger(false);
@@ -88,16 +88,16 @@ export const LedgerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     // Migrate all old transactions into months
     const txnsSnap = await getDocs(collection(db, 'users', uid, 'transactions'));
     const txns = txnsSnap.docs.map(d => ({ id: d.id, ...d.data() as any }));
-    
+
     // Read Finance Settings to get globalBudget
     const financeSnap = await getDoc(doc(db, 'users', uid, 'config', 'finance'));
     const globalBudget = financeSnap.exists() ? financeSnap.data().globalBudget || 0 : 0;
-    
+
     const monthData: Record<string, { income: number; expense: number; txns: any[] }> = {};
-    
+
     txns.forEach(txn => {
       // date is YYYY-MM-DD
-      const mStr = txn.date.substring(0, 7); 
+      const mStr = txn.date.substring(0, 7);
       if (!monthData[mStr]) monthData[mStr] = { income: 0, expense: 0, txns: [] };
       monthData[mStr].txns.push(txn);
       if (txn.type === 'income') monthData[mStr].income += txn.amount;
@@ -110,7 +110,7 @@ export const LedgerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     for (const [mStr, data] of Object.entries(monthData)) {
       const summaryRef = doc(db, 'users', uid, 'months', mStr);
       const savings = data.income - data.expense;
-      
+
       // We only add to lifetime savings if it's NOT the current month (since current month is active)
       if (mStr < currentMonthStr) {
         totalLifetimeSavings += savings;
@@ -144,22 +144,22 @@ export const LedgerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
 
     await batch.commit();
-    
+
     setProfile({ ...p, lastActiveMonth: currentMonthStr, lifetimeSavings: totalLifetimeSavings });
   };
 
   const runRollover = async (uid: string, p: UserProfile, currentMonth: string) => {
     const prevMonthStr = p.lastActiveMonth!;
-    
+
     // Fetch last active month summary
     const prevMonthRef = doc(db, 'users', uid, 'months', prevMonthStr);
     const prevMonthSnap = await getDoc(prevMonthRef);
-    
+
     let addedSavings = 0;
     if (prevMonthSnap.exists()) {
       const d = prevMonthSnap.data();
       addedSavings = (d.income || 0) - (d.expense || 0);
-      
+
       // ensure we record the final savings
       await updateDoc(prevMonthRef, { savings: addedSavings });
     }
@@ -171,7 +171,7 @@ export const LedgerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const globalBudget = financeSnap.exists() ? financeSnap.data().globalBudget || 0 : 0;
 
     const batch = writeBatch(db);
-    
+
     // Create new month
     const newMonthRef = doc(db, 'users', uid, 'months', currentMonth);
     batch.set(newMonthRef, {
