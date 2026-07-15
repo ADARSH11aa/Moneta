@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import { useLedger } from '../../context/LedgerContext';
 import { format } from 'date-fns';
-import { Menu } from 'lucide-react';
+import { Menu, Download } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -11,10 +11,31 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
 
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+
   // Close sidebar on route change
   useEffect(() => {
     setIsSidebarOpen(false);
   }, [location.pathname]);
+
+  // Handle PWA Install Prompt
+  useEffect(() => {
+    const handler = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+    }
+  };
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'transparent', flexDirection: 'column' }}>
@@ -37,6 +58,19 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 <button onClick={() => setActiveMonth(currentMonth)} style={{ background: '#d97706', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Return to Current Month</button>
               </div>
             )}
+            {deferredPrompt && (
+              <div className="fade-in" style={{ background: 'var(--teal-pale)', color: 'var(--teal)', padding: '12px 24px', borderRadius: '12px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', border: '1px solid var(--line)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <img src="/logo.png" alt="Moneta" style={{ width: '24px', height: '24px' }} />
+                  <span style={{ fontWeight: 600 }}>Install Moneta for a better experience</span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button onClick={handleInstall} style={{ background: 'var(--teal)', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}><Download size={16}/> Install</button>
+                  <button onClick={() => setDeferredPrompt(null)} style={{ background: 'transparent', color: 'var(--ink)', border: 'none', padding: '8px 12px', cursor: 'pointer', fontWeight: 600 }}>Dismiss</button>
+                </div>
+              </div>
+            )}
+            
             {children}
           </div>
         </main>

@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useFinance } from '../context/FinanceContext';
+import { useCurrency } from '../hooks/useCurrency';
 import { Plus, Edit2, Trash2, Calendar, CreditCard } from 'lucide-react';
 import type { Subscription } from '../types';
 
@@ -48,7 +49,7 @@ const RecurringPage: React.FC = () => {
     setIsModalOpen(false);
   };
 
-  const fmt = (n: number) => '₹' + Math.round(n).toLocaleString('en-IN');
+  const { fmt } = useCurrency();
 
   const { monthlyTotal, yearlyTotal } = useMemo(() => {
     let m = 0, y = 0;

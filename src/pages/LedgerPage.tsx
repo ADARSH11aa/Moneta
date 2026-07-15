@@ -3,6 +3,7 @@ import { useLedger } from '../context/LedgerContext';
 import { format, parse } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, ChevronRight, TrendingDown, TrendingUp, PiggyBank } from 'lucide-react';
+import { useCurrency } from '../hooks/useCurrency';
 
 const LedgerPage: React.FC = () => {
   const { availableMonths, setActiveMonth } = useLedger();
@@ -13,7 +14,7 @@ const LedgerPage: React.FC = () => {
     navigate('/dashboard');
   };
 
-  const fmt = (n: number) => '₹' + Math.round(n || 0).toLocaleString('en-IN');
+  const { fmt } = useCurrency();
 
   return (
     <div>

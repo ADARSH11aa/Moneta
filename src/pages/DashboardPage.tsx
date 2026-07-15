@@ -3,6 +3,7 @@ import { useTransactions } from '../context/TransactionContext';
 import { useFinance } from '../context/FinanceContext';
 import { useLedger } from '../context/LedgerContext';
 import { ArrowRight, TrendingUp, TrendingDown, Calendar, AlertCircle, PiggyBank, Target } from 'lucide-react';
+import { useCurrency } from '../hooks/useCurrency';
 import { Link } from 'react-router-dom';
 import { format, parse } from 'date-fns';
 
@@ -10,8 +11,8 @@ const DashboardPage: React.FC = () => {
   const { transactions } = useTransactions();
   const { settings, subscriptions } = useFinance();
   const { profile, activeMonth } = useLedger();
+  const { fmt } = useCurrency();
 
-  const fmt = (n: number) => '₹' + Math.round(n || 0).toLocaleString('en-IN');
   const monthName = activeMonth ? format(parse(activeMonth, 'yyyy-MM', new Date()), 'MMMM yyyy') : '';
 
   const { income, expense, recentTxns, effectiveBudget, remainingBudget } = useMemo(() => {

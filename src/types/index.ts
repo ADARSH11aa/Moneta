@@ -53,3 +53,16 @@ export interface MonthlySummary {
   budget: number;
   savings: number;
 }
+
+export interface UserPreferences {
+  currency: string;
+  theme: 'light' | 'dark' | 'system';
+  accentColor: string;
+  glassIntensity: number;
+  blurIntensity: number;
+  notifications: {
+    monthlyReminder: boolean;
+    budgetWarning: boolean;
+    recurringReminder: boolean;
+  };
+}

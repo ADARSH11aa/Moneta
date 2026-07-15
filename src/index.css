@@ -296,3 +296,64 @@
     height: calc(100vh - 61px); /* minus mobile header approx height */
   }
 }
+
+/* --- Settings Page --- */
+.settings-layout {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  max-width: 1000px;
+}
+.settings-sidebar {
+  width: 250px;
+  padding: 16px;
+  position: sticky;
+  top: 100px;
+}
+.tab-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+@media (max-width: 768px) {
+  .settings-layout {
+    flex-direction: column;
+  }
+  .settings-sidebar {
+    width: 100%;
+    position: static;
+  }
+  .tab-list {
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+  .tab-list::-webkit-scrollbar {
+    height: 4px;
+  }
+  .tab-list::-webkit-scrollbar-thumb {
+    background: var(--line);
+    border-radius: 4px;
+  }
+  .tab-list button {
+    white-space: nowrap;
+  }
+}
+
+/* --- Animations --- */
+@keyframes skeletonPulse {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fade-in { animation: fadeIn 0.4s ease-out forwards; }

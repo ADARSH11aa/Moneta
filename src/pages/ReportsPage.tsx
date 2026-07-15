@@ -6,6 +6,8 @@ import { format, subDays } from 'date-fns';
 import { Download, TrendingDown, Wallet, FileText, Image as ImageIcon, FileSpreadsheet, ChevronDown } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
+import { useCurrency } from '../hooks/useCurrency';
+import { useToast } from '../context/ToastContext';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'];
 
@@ -14,6 +16,7 @@ const ReportsPage: React.FC = () => {
   const { settings } = useFinance();
   const reportRef = useRef<HTMLDivElement>(null);
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const { success, error } = useToast();
 
   const { chartData, categoryData, kpis } = useMemo(() => {
     // KPI Data
@@ -57,7 +60,7 @@ const ReportsPage: React.FC = () => {
   }, [transactions, settings.globalBudget, settings.extraBudget]);
 
   const exportCSV = () => {
-    if (transactions.length === 0) return alert('No transactions to export.');
+    if (transactions.length === 0) return error('No transactions to export.');
     const headers = ['ID', 'Date', 'Type', 'Category', 'Wallet', 'Amount', 'Note', 'Tags'];
     const rows = transactions.map(t => [
       t.id, t.date, t.type, t.category, t.walletId, t.amount, `"${t.note || ''}"`, `"${(t.tags || []).join(', ')}"`
@@ -72,6 +75,7 @@ const ReportsPage: React.FC = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    success('CSV Exported Successfully');
   };
 
   const exportImage = async () => {
@@ -83,9 +87,10 @@ const ReportsPage: React.FC = () => {
       link.href = imgData;
       link.download = `moneta_report_${format(new Date(), 'yyyy-MM-dd')}.png`;
       link.click();
+      success('Image Exported Successfully');
     } catch (e) {
       console.error(e);
-      alert('Failed to export image.');
+      error('Failed to export image.');
     }
   };
 
@@ -101,13 +106,14 @@ const ReportsPage: React.FC = () => {
       });
       pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
       pdf.save(`moneta_report_${format(new Date(), 'yyyy-MM-dd')}.pdf`);
+      success('PDF Exported Successfully');
     } catch (e) {
       console.error(e);
-      alert('Failed to export PDF.');
+      error('Failed to export PDF.');
     }
   };
 
-  const fmt = (n: number) => '₹' + Math.round(n).toLocaleString('en-IN');
+  const { fmt } = useCurrency();
 
   return (
     <div>

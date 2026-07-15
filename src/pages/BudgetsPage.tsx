@@ -5,6 +5,8 @@ import { useLedger } from '../context/LedgerContext';
 import { Edit2, Target, PiggyBank, Save, X, Plus } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, AreaChart, Area, XAxis, CartesianGrid } from 'recharts';
 import { format, startOfMonth, eachDayOfInterval, endOfMonth, parse } from 'date-fns';
+import { useCurrency } from '../hooks/useCurrency';
+import { useToast } from '../context/ToastContext';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'];
 
@@ -17,6 +19,7 @@ const BudgetsPage: React.FC = () => {
   const [budgetVal, setBudgetVal] = useState('');
   const [extraVal, setExtraVal] = useState('');
   const [savingsVal, setSavingsVal] = useState('');
+  const { success } = useToast();
 
   const handleEdit = () => {
     setBudgetVal(String(settings.globalBudget || 0));
@@ -34,9 +37,10 @@ const BudgetsPage: React.FC = () => {
       lifetimeSavings: Number(savingsVal),
     });
     setIsEditing(false);
+    success('Budget & Savings updated successfully');
   };
 
-  const fmt = (n: number) => '₹' + Math.round(n).toLocaleString('en-IN');
+  const { fmt } = useCurrency();
 
   const { spentThisMonth, categoryData, trendData } = useMemo(() => {
     const expenseTxns = transactions.filter(t => t.type === 'expense');

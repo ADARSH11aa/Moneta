@@ -2,6 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { useTransactions } from '../context/TransactionContext';
 import { Search, Plus, Star, Copy, Edit2, Trash2, Tag as TagIcon, Zap } from 'lucide-react';
 import type { TransactionType } from '../types';
+import { useCurrency } from '../hooks/useCurrency';
+import { useToast } from '../context/ToastContext';
 
 const CATEGORIES = ['Food', 'Transport', 'Bills & subscriptions', 'Shopping', 'Health', 'Entertainment', 'Other'];
 const WALLETS = ['Cash', 'UPI', 'Credit Card', 'Bank Account'];
@@ -15,6 +17,7 @@ const TransactionsPage: React.FC = () => {
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const { success } = useToast();
   
   // Form State
   const [type, setType] = useState<TransactionType>('expense');
@@ -76,8 +79,10 @@ const TransactionsPage: React.FC = () => {
     if (editingId) {
       const oldTxn = transactions.find(t => t.id === editingId);
       await updateTransaction(editingId, txnData, oldTxn);
+      success('Transaction updated');
     } else {
       await addTransaction(txnData);
+      success('Transaction added');
     }
     setIsModalOpen(false);
   };
@@ -92,10 +97,12 @@ const TransactionsPage: React.FC = () => {
       note: shortcut.name,
       tags: []
     });
+    success('Quick shortcut added');
   };
 
   const toggleFavorite = async (txn: any) => {
     await updateTransaction(txn.id, { isFavorite: !txn.isFavorite }, txn);
+    success(txn.isFavorite ? 'Removed from favorites' : 'Added to favorites');
   };
 
   const filteredAndSorted = useMemo(() => {
@@ -119,7 +126,7 @@ const TransactionsPage: React.FC = () => {
     });
   }, [transactions, search, sortBy]);
 
-  const fmt = (n: number) => '₹' + Math.round(n).toLocaleString('en-IN');
+  const { fmt } = useCurrency();
 
   return (
     <div>
@@ -202,9 +209,9 @@ const TransactionsPage: React.FC = () => {
                   {/* Action Icons */}
                   <div style={{ display: 'flex', gap: '8px', color: '#94a3b8' }}>
                     <button onClick={() => toggleFavorite(txn)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}><Star size={16} color={txn.isFavorite ? '#eab308' : '#94a3b8'} /></button>
-                    <button onClick={() => duplicateTransaction(txn.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}><Copy size={16} /></button>
+                    <button onClick={() => { duplicateTransaction(txn.id); success('Transaction duplicated'); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}><Copy size={16} /></button>
                     <button onClick={() => openModal(txn)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}><Edit2 size={16} /></button>
-                    <button onClick={() => deleteTransaction(txn.id, txn)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#ef4444' }}><Trash2 size={16} /></button>
+                    <button onClick={() => { deleteTransaction(txn.id, txn); success('Transaction deleted'); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#ef4444' }}><Trash2 size={16} /></button>
                   </div>
                 </div>
               </div>
