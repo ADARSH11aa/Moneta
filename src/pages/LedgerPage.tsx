@@ -54,7 +54,7 @@ const LedgerPage: React.FC = () => {
                   <ChevronRight size={24} color="#cbd5e1" />
                 </div>
                 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', paddingTop: '16px', borderTop: '1px solid #f1f5f9' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '16px', paddingTop: '16px', borderTop: '1px solid #f1f5f9' }}>
                   <div>
                     <p style={{ margin: '0 0 4px 0', fontSize: '13px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}><TrendingUp size={14} color="#10b981" /> Income</p>
                     <div style={{ fontSize: '18px', fontWeight: 700 }}>{fmt(m.income)}</div>

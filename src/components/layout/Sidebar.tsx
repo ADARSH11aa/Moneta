@@ -11,7 +11,12 @@ import {
   Sun
 } from 'lucide-react';
 
-const Sidebar: React.FC = () => {
+interface SidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const links = [
     { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
     { name: 'Monthly Ledger', path: '/ledger', icon: <Target size={20} /> },
@@ -23,19 +28,7 @@ const Sidebar: React.FC = () => {
   ];
 
   return (
-    <div style={{
-      width: '240px',
-      height: '100vh',
-      background: 'var(--bg-card)',
-      backdropFilter: 'blur(20px)',
-      borderRight: '1px solid var(--border-card)',
-      display: 'flex',
-      flexDirection: 'column',
-      padding: '24px 0',
-      position: 'fixed',
-      left: 0,
-      top: 0
-    }}>
+    <div className={`sidebar ${isOpen ? 'open' : ''}`}>
       <div style={{ padding: '0 24px', marginBottom: '40px', display: 'flex', alignItems: 'center', gap: '12px' }}>
         <img src="/logo.png" alt="MONETA Logo" style={{ height: '56px', objectFit: 'contain' }} />
       </div>
@@ -45,6 +38,7 @@ const Sidebar: React.FC = () => {
           <NavLink
             key={link.name}
             to={link.path}
+            onClick={onClose}
             style={({ isActive }) => ({
               display: 'flex',
               alignItems: 'center',

@@ -173,3 +173,126 @@
   .shortcut-existing button{ background:none; border:none; color:var(--red); cursor:pointer; font-size:13px; }
 
 #root { width: 100%; height: 100%; }
+
+/* --- Responsive Utilities --- */
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-responsive table {
+  min-width: 600px;
+}
+
+/* Dashboard Grids */
+.dashboard-grid-main {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 1023px) {
+  .dashboard-grid-main {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dashboard-grid-reports {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 1023px) {
+  .dashboard-grid-reports {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Sidebar and Mobile Header */
+.sidebar {
+  width: 240px;
+  height: 100vh;
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  border-right: 1px solid var(--border-card);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 0;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 50;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(4px);
+  z-index: 40;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.sidebar-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mobile-header {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: var(--bg-main);
+  border-bottom: 1px solid var(--border-card);
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  backdrop-filter: blur(20px);
+}
+
+.mobile-header button.menu-btn {
+  background: none;
+  border: none;
+  color: var(--ink);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.mobile-header .logo {
+  height: 24px;
+  object-fit: contain;
+}
+
+.layout-main {
+  flex: 1;
+  margin-left: 240px;
+  padding: 40px;
+  overflow-y: auto;
+  height: 100vh;
+  transition: margin-left 0.3s ease, padding 0.3s ease;
+}
+
+@media (max-width: 1023px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  .mobile-header {
+    display: flex;
+  }
+  .layout-main {
+    margin-left: 0;
+    padding: 20px 16px;
+    height: calc(100vh - 61px); /* minus mobile header approx height */
+  }
+}

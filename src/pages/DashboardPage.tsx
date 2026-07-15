@@ -81,7 +81,7 @@ const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
+      <div className="dashboard-grid-main">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           {/* Recent Transactions */}
           <div className="card">

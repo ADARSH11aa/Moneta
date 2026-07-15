@@ -172,7 +172,7 @@ const ReportsPage: React.FC = () => {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
+        <div className="dashboard-grid-main">
           {/* Spend Analysis Area Chart */}
           <div className="card">
             <h3 style={{ margin: '0 0 24px 0', color: 'var(--ink)' }}>Spend Analysis (Last 30 Days)</h3>
