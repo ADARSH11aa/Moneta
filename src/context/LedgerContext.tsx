@@ -11,6 +11,7 @@ interface LedgerContextType {
   setActiveMonth: (month: string) => void;
   availableMonths: MonthlySummary[];
   profile: UserProfile | null;
+  updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
   loadingLedger: boolean;
   showWelcomePopup: boolean;
   setShowWelcomePopup: (show: boolean) => void;
@@ -39,6 +40,13 @@ export const LedgerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const [showWelcomePopup, setShowWelcomePopup] = useState(false);
   const [rolledOverMonth, setRolledOverMonth] = useState<string | null>(null);
+
+  const updateProfile = async (updates: Partial<UserProfile>) => {
+    if (!currentUser || !profile) return;
+    const profileRef = doc(db, 'users', currentUser.uid);
+    await updateDoc(profileRef, updates);
+    setProfile(prev => prev ? { ...prev, ...updates } : null);
+  };
 
   const refreshMonths = async () => {
     if (!currentUser) return;
@@ -197,7 +205,7 @@ export const LedgerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   return (
     <LedgerContext.Provider value={{
-      activeMonth, setActiveMonth, availableMonths, profile, loadingLedger,
+      activeMonth, setActiveMonth, availableMonths, profile, updateProfile, loadingLedger,
       showWelcomePopup, setShowWelcomePopup, rolledOverMonth, refreshMonths
     }}>
       {children}

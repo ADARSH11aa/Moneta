@@ -69,7 +69,7 @@ const SettingsPage: React.FC = () => {
               <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px', color: 'var(--ink)' }}>Amount</label>
               <input type="number" value={amount} onChange={e => setAmount(e.target.value)} required placeholder="₹20" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--line)', background: 'transparent', color: 'var(--ink)' }} />
             </div>
-            <button type="submit" style={{ padding: '10px 16px', borderRadius: '8px', border: 'none', background: 'var(--ink)', color: 'var(--bg-main)', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <button type="submit" style={{ padding: '10px 16px', borderRadius: '8px', border: 'none', background: 'var(--ink)', color: 'var(--nav-active-text)', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Plus size={16} /> Add
             </button>
           </form>

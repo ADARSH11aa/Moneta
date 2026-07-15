@@ -11,15 +11,17 @@ const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'
 const BudgetsPage: React.FC = () => {
   const { settings, updateSettings } = useFinance();
   const { transactions } = useTransactions();
-  const { profile, activeMonth } = useLedger();
+  const { profile, activeMonth, updateProfile } = useLedger();
   
   const [isEditing, setIsEditing] = useState(false);
   const [budgetVal, setBudgetVal] = useState('');
   const [extraVal, setExtraVal] = useState('');
+  const [savingsVal, setSavingsVal] = useState('');
 
   const handleEdit = () => {
     setBudgetVal(String(settings.globalBudget || 0));
     setExtraVal(String(settings.extraBudget || 0));
+    setSavingsVal(String(profile?.lifetimeSavings || 0));
     setIsEditing(true);
   };
 
@@ -27,6 +29,9 @@ const BudgetsPage: React.FC = () => {
     await updateSettings({
       globalBudget: Number(budgetVal),
       extraBudget: Number(extraVal),
+    });
+    await updateProfile({
+      lifetimeSavings: Number(savingsVal),
     });
     setIsEditing(false);
   };
@@ -135,21 +140,25 @@ const BudgetsPage: React.FC = () => {
             <div style={{ background: 'rgba(255,255,255,0.2)', padding: '12px', borderRadius: '50%' }}><PiggyBank size={24} color="#fff" /></div>
             <div>
               <p style={{ color: 'rgba(255,255,255,0.8)', margin: '0 0 4px 0', fontSize: '13px', fontWeight: 600 }}>Lifetime Savings</p>
-              <h2 style={{ margin: 0, fontSize: '32px' }}>{fmt(profile?.lifetimeSavings || 0)}</h2>
+              {isEditing ? (
+                <input type="number" value={savingsVal} onChange={e => setSavingsVal(e.target.value)} style={{ padding: '8px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.1)', color: '#fff', width: '150px', fontSize: '18px', fontWeight: 'bold', outline: 'none' }} placeholder="Savings" />
+              ) : (
+                <h2 style={{ margin: 0, fontSize: '32px' }}>{fmt(profile?.lifetimeSavings || 0)}</h2>
+              )}
             </div>
           </div>
           <p style={{ margin: 0, fontSize: '14px', opacity: 0.9 }}>Your savings accumulated over all months.</p>
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
         {/* Category Pie Chart */}
         <div className="card">
           <h3 style={{ margin: '0 0 24px 0' }}>Where is the budget going?</h3>
           {categoryData.length === 0 ? (
             <p style={{ color: '#94a3b8' }}>No expenses this month.</p>
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center', gap: '24px' }}>
               <div style={{ width: '200px', height: '200px' }}>
                 <ResponsiveContainer>
                   <PieChart>
@@ -160,7 +169,7 @@ const BudgetsPage: React.FC = () => {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px', paddingLeft: '24px' }}>
+              <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {categoryData.slice(0, 5).map((d, i) => (
                   <div key={d.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '13px', fontWeight: 600 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
