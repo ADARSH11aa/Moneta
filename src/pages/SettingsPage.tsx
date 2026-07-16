@@ -108,21 +108,24 @@ const SettingsPage: React.FC = () => {
         
         {activeTab === 'account' && (
           <div className="fade-in">
-            <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '28px', margin: '0 0 24px 0' }}>Account</h1>
-            <div className="card" style={{ display: 'flex', gap: '24px', alignItems: 'center', marginBottom: '24px', background: 'linear-gradient(135deg, var(--bg-card) 0%, rgba(16,185,129,0.05) 100%)' }}>
-              <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'var(--teal)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', fontWeight: 'bold', boxShadow: '0 10px 25px -5px rgba(16,185,129,0.4)' }}>
+            <div className="settings-header">
+              <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '28px', margin: 0 }}>Account</h1>
+              <button onClick={() => { logout(); success('Logged out successfully'); }} className="logout-btn">
+                <LogOut size={16} /> Logout
+              </button>
+            </div>
+            
+            <div className="card profile-card" style={{ display: 'flex', gap: '24px', alignItems: 'center', marginBottom: '24px', background: 'linear-gradient(135deg, var(--bg-card) 0%, rgba(16,185,129,0.05) 100%)' }}>
+              <div className="profile-avatar">
                 {currentUser?.email?.charAt(0).toUpperCase()}
               </div>
-              <div style={{ flex: 1 }}>
+              <div className="profile-info" style={{ flex: 1 }}>
                 <h3 style={{ margin: '0 0 4px 0', fontSize: '24px' }}>{currentUser?.displayName || 'Moneta User'}</h3>
                 <p style={{ margin: '0 0 8px 0', color: 'var(--ink-soft)' }}>{currentUser?.email}</p>
                 <span style={{ fontSize: '12px', background: 'var(--teal-pale)', color: 'var(--teal)', padding: '4px 10px', borderRadius: '99px', fontWeight: 600 }}>
                   Member since {profile?.createdAt ? (typeof profile.createdAt.toDate === 'function' ? format(profile.createdAt.toDate(), 'MMM yyyy') : format(new Date(profile.createdAt), 'MMM yyyy')) : 'Recently'}
                 </span>
               </div>
-              <button onClick={() => { logout(); success('Logged out successfully'); }} style={{ background: '#fee2e2', color: '#ef4444', border: 'none', padding: '12px 20px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 600 }}>
-                <LogOut size={16} /> Logout
-              </button>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>

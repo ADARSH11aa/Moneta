@@ -154,8 +154,8 @@ const TransactionsPage: React.FC = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '32px', margin: 0 }}>Transactions</h1>
         <button 
+          className="new-txn-btn"
           onClick={() => openModal()}
-          style={{ background: '#000', color: '#fff', border: 'none', padding: '12px 20px', borderRadius: '99px', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 600 }}
         >
           <Plus size={18} /> New Transaction
         </button>
@@ -177,21 +177,21 @@ const TransactionsPage: React.FC = () => {
 
       {/* Filters and List */}
       <div className="card">
-        <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, position: 'relative' }}>
-            <Search size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#94a3b8' }} />
+        <div className="txn-filters">
+          <div className="search-wrap">
+            <Search size={18} className="search-icon" />
             <input 
               type="text" 
-              placeholder="Search by merchant, category, tag..." 
+              placeholder="Search..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: '12px', border: '1px solid #e2e8f0', outline: 'none' }} 
+              className="search-input"
             />
           </div>
           <select 
             value={sortBy} 
             onChange={(e) => setSortBy(e.target.value as any)}
-            style={{ padding: '0 16px', borderRadius: '12px', border: '1px solid #e2e8f0', outline: 'none', background: '#fff' }}
+            className="sort-select"
           >
             <option value="date">Sort by Date</option>
             <option value="amount">Sort by Amount</option>
