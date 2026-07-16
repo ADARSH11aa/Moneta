@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useFinance } from '../context/FinanceContext';
 import { useCurrency } from '../hooks/useCurrency';
 import { Plus, Edit2, Trash2, Calendar, CreditCard } from 'lucide-react';
@@ -9,6 +10,9 @@ const RecurringPage: React.FC = () => {
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  
+  const location = useLocation();
+  const navigate = useNavigate();
   
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
@@ -34,6 +38,13 @@ const RecurringPage: React.FC = () => {
     }
     setIsModalOpen(true);
   };
+
+  useEffect(() => {
+    if (location.state?.action === 'add-recurring') {
+      openModal();
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, navigate]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();

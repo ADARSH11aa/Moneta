@@ -4,6 +4,8 @@ import { useLedger } from '../../context/LedgerContext';
 import { format } from 'date-fns';
 import { Menu, Download } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
+import BottomNav from './BottomNav';
+import FAB from './FAB';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { activeMonth, setActiveMonth } = useLedger();
@@ -87,6 +89,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </div>
         </main>
       </div>
+      
+      <BottomNav />
+      <FAB />
     </div>
   );
 };

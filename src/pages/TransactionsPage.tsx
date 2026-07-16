@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useTransactions } from '../context/TransactionContext';
 import { Search, Plus, Star, Copy, Edit2, Trash2, Tag as TagIcon, Zap } from 'lucide-react';
 import type { TransactionType } from '../types';
@@ -18,6 +19,9 @@ const TransactionsPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const { success } = useToast();
+  
+  const location = useLocation();
+  const navigate = useNavigate();
   
   // Form State
   const [type, setType] = useState<TransactionType>('expense');
@@ -61,6 +65,23 @@ const TransactionsPage: React.FC = () => {
     }
     setIsModalOpen(true);
   };
+
+  useEffect(() => {
+    if (location.state?.action) {
+      if (location.state.action === 'add-expense') {
+        openModal();
+        setType('expense');
+      } else if (location.state.action === 'add-income') {
+        openModal();
+        setType('income');
+      } else if (location.state.action === 'transfer') {
+        openModal();
+        setType('transfer');
+      }
+      // Clear the state so it doesn't re-trigger on refresh
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, navigate]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
