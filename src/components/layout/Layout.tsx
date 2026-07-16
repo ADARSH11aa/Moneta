@@ -12,6 +12,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
 
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isDismissed, setIsDismissed] = useState(localStorage.getItem('pwa-dismissed') === 'true');
 
   // Close sidebar on route change
   useEffect(() => {
@@ -22,7 +23,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   useEffect(() => {
     const handler = (e: any) => {
       e.preventDefault();
-      setDeferredPrompt(e);
+      if (!isDismissed) {
+        setDeferredPrompt(e);
+      }
     };
     window.addEventListener('beforeinstallprompt', handler);
     return () => window.removeEventListener('beforeinstallprompt', handler);
@@ -35,6 +38,12 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (outcome === 'accepted') {
       setDeferredPrompt(null);
     }
+  };
+
+  const handleDismiss = () => {
+    localStorage.setItem('pwa-dismissed', 'true');
+    setIsDismissed(true);
+    setDeferredPrompt(null);
   };
 
   return (
@@ -58,15 +67,18 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 <button onClick={() => setActiveMonth(currentMonth)} style={{ background: '#d97706', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Return to Current Month</button>
               </div>
             )}
-            {deferredPrompt && (
-              <div className="fade-in" style={{ background: 'var(--teal-pale)', color: 'var(--teal)', padding: '12px 24px', borderRadius: '12px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', border: '1px solid var(--line)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <img src="/logo.png" alt="Moneta" style={{ width: '24px', height: '24px' }} />
-                  <span style={{ fontWeight: 600 }}>Install Moneta for a better experience</span>
+            {deferredPrompt && !isDismissed && (
+              <div className="fade-in" style={{ background: 'var(--teal-pale)', color: 'var(--teal)', padding: '16px 24px', borderRadius: '16px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', border: '1px solid var(--line)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <img src="/logo.png" alt="Moneta" style={{ width: '32px', height: '32px' }} />
+                  <div>
+                    <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: 600 }}>Install Moneta</h3>
+                    <span style={{ fontSize: '13px', opacity: 0.9 }}>Install Moneta for a faster, app-like experience.</span>
+                  </div>
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
-                  <button onClick={handleInstall} style={{ background: 'var(--teal)', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}><Download size={16}/> Install</button>
-                  <button onClick={() => setDeferredPrompt(null)} style={{ background: 'transparent', color: 'var(--ink)', border: 'none', padding: '8px 12px', cursor: 'pointer', fontWeight: 600 }}>Dismiss</button>
+                  <button onClick={handleInstall} style={{ background: 'var(--teal)', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '12px', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}><Download size={16}/> Install</button>
+                  <button onClick={handleDismiss} style={{ background: 'transparent', color: 'var(--ink)', border: 'none', padding: '10px 16px', cursor: 'pointer', fontWeight: 600 }}>Maybe Later</button>
                 </div>
               </div>
             )}

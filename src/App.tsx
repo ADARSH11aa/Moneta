@@ -8,6 +8,8 @@ import { PreferencesProvider, usePreferences } from './context/PreferencesContex
 import { ToastProvider } from './context/ToastContext';
 import Layout from './components/layout/Layout';
 import WelcomePopup from './components/WelcomePopup';
+import PwaUpdater from './components/PwaUpdater';
+import OfflineFallback from './components/OfflineFallback';
 
 const HomePage = lazy(() => import('./pages/HomePage'));
 const AuthPage = lazy(() => import('./pages/AuthPage'));
@@ -94,20 +96,23 @@ function App() {
 
                   <div style={{ position: 'relative', zIndex: 1, minHeight: '100vh' }}>
                     <Router>
-                      <Suspense fallback={<PageLoader />}>
-                        <Routes>
-                          <Route path="/" element={<HomePage />} />
-                          <Route path="/login" element={<AuthPage />} />
-                          <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-                          <Route path="/ledger" element={<ProtectedRoute><LedgerPage /></ProtectedRoute>} />
-                          <Route path="/transactions" element={<ProtectedRoute><TransactionsPage /></ProtectedRoute>} />
-                          <Route path="/recurring" element={<ProtectedRoute><RecurringPage /></ProtectedRoute>} />
-                          <Route path="/budgets" element={<ProtectedRoute><BudgetsPage /></ProtectedRoute>} />
-                          <Route path="/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
-                          <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-                        </Routes>
-                      </Suspense>
+                      <OfflineFallback>
+                        <Suspense fallback={<PageLoader />}>
+                          <Routes>
+                            <Route path="/" element={<HomePage />} />
+                            <Route path="/login" element={<AuthPage />} />
+                            <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+                            <Route path="/ledger" element={<ProtectedRoute><LedgerPage /></ProtectedRoute>} />
+                            <Route path="/transactions" element={<ProtectedRoute><TransactionsPage /></ProtectedRoute>} />
+                            <Route path="/recurring" element={<ProtectedRoute><RecurringPage /></ProtectedRoute>} />
+                            <Route path="/budgets" element={<ProtectedRoute><BudgetsPage /></ProtectedRoute>} />
+                            <Route path="/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
+                            <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+                          </Routes>
+                        </Suspense>
+                      </OfflineFallback>
                     </Router>
+                    <PwaUpdater />
                   </div>
                 </div>
               </FinanceProvider>
