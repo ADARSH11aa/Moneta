@@ -115,12 +115,12 @@ const SettingsPage: React.FC = () => {
               </button>
             </div>
             
-            <div className="card profile-card" style={{ display: 'flex', gap: '24px', alignItems: 'center', marginBottom: '24px', background: 'linear-gradient(135deg, var(--bg-card) 0%, rgba(16,185,129,0.05) 100%)' }}>
+            <div className="card profile-card">
               <div className="profile-avatar">
                 {currentUser?.email?.charAt(0).toUpperCase()}
               </div>
-              <div className="profile-info" style={{ flex: 1 }}>
-                <h3 style={{ margin: '0 0 4px 0', fontSize: '24px' }}>{currentUser?.displayName || 'Moneta User'}</h3>
+              <div className="profile-info">
+                <h3>{currentUser?.displayName || 'Moneta User'}</h3>
                 <p style={{ margin: '0 0 8px 0', color: 'var(--ink-soft)' }}>{currentUser?.email}</p>
                 <span style={{ fontSize: '12px', background: 'var(--teal-pale)', color: 'var(--teal)', padding: '4px 10px', borderRadius: '99px', fontWeight: 600 }}>
                   Member since {profile?.createdAt ? (typeof profile.createdAt.toDate === 'function' ? format(profile.createdAt.toDate(), 'MMM yyyy') : format(new Date(profile.createdAt), 'MMM yyyy')) : 'Recently'}
@@ -128,18 +128,18 @@ const SettingsPage: React.FC = () => {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-              <div className="card" style={{ padding: '20px' }}>
-                <p style={{ color: 'var(--ink-soft)', margin: '0 0 8px 0', fontSize: '13px', fontWeight: 600 }}>Total Transactions</p>
-                <h2 style={{ margin: 0, fontSize: '28px', color: 'var(--ink)' }}>{transactions.length}</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
+              <div className="card stat-card-settings">
+                <p>Total Transactions</p>
+                <h2>{transactions.length}</h2>
               </div>
-              <div className="card" style={{ padding: '20px' }}>
-                <p style={{ color: 'var(--ink-soft)', margin: '0 0 8px 0', fontSize: '13px', fontWeight: 600 }}>Lifetime Savings</p>
-                <h2 style={{ margin: 0, fontSize: '28px', color: 'var(--ink)' }}>{fmt(profile?.lifetimeSavings || 0)}</h2>
+              <div className="card stat-card-settings">
+                <p>Lifetime Savings</p>
+                <h2>{fmt(profile?.lifetimeSavings || 0)}</h2>
               </div>
-              <div className="card" style={{ padding: '20px' }}>
-                <p style={{ color: 'var(--ink-soft)', margin: '0 0 8px 0', fontSize: '13px', fontWeight: 600 }}>Current Budget</p>
-                <h2 style={{ margin: 0, fontSize: '28px', color: 'var(--ink)' }}>{fmt(settings.globalBudget || 0)}</h2>
+              <div className="card stat-card-settings">
+                <p>Current Budget</p>
+                <h2>{fmt(settings.globalBudget || 0)}</h2>
               </div>
             </div>
           </div>

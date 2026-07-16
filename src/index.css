@@ -377,6 +377,23 @@
 
 .fade-in { animation: fadeIn 0.4s ease-out forwards; }
 
+.new-txn-btn {
+  background: #000;
+  color: #fff;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 99px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+html.dark .new-txn-btn {
+  background: #fff;
+  color: #000;
+}
+
 /* ==================================================
    MOBILE UI/UX REDESIGN (Max 767px)
    ================================================== */
@@ -425,6 +442,7 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 16px;
+    margin-top: 8px; /* Added spacing from tabs */
   }
   .logout-btn {
     background: #fee2e2;
@@ -442,29 +460,73 @@
     background: rgba(239, 68, 68, 0.15);
   }
   .profile-card {
+    display: flex;
+    align-items: center;
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(16,185,129,0.05) 100%);
     gap: 16px !important;
     padding: 12px 16px !important;
+    margin-bottom: 24px;
   }
   .profile-avatar {
     width: 50px !important;
     height: 50px !important;
+    border-radius: 50%;
+    background: var(--teal);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
     font-size: 20px !important;
     box-shadow: none !important;
   }
+  .profile-info {
+    flex: 1;
+  }
   .profile-info h3 {
     font-size: 18px !important;
-    margin-bottom: 2px !important;
+    margin: 0 0 2px 0 !important;
   }
   .profile-info p {
     font-size: 12px !important;
-    margin-bottom: 4px !important;
+    color: var(--ink-soft);
+    margin: 0 0 4px 0 !important;
+  }
+  
+  .stat-card-settings {
+    padding: 16px;
+  }
+  .stat-card-settings p {
+    color: var(--ink-soft);
+    margin: 0 0 8px 0;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .stat-card-settings h2 {
+    margin: 0;
+    font-size: 26px !important;
+    color: var(--ink);
   }
 
   /* Transactions Specifics */
   .new-txn-btn {
-    padding: 8px 12px !important;
-    font-size: 13px !important;
-    gap: 4px !important;
+    background: #000;
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 10px 16px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px !important;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px !important;
+    transition: transform 0.2s;
+  }
+  html.dark .new-txn-btn {
+    background: #fff;
+    color: #000;
   }
   .txn-filters {
     display: flex;
@@ -517,7 +579,7 @@
 
   /* Reports Compact Charts */
   .recharts-wrapper, canvas#trendCanvas {
-    max-height: 220px !important;
+    max-height: 300px !important;
   }
 }
 
