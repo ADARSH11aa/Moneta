@@ -91,7 +91,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       </div>
       
       <BottomNav />
-      <FAB />
+      {location.pathname === '/transactions' && <FAB />}
     </div>
   );
 };

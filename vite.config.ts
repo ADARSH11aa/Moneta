@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'prompt',
+      registerType: 'autoUpdate',
       includeAssets: ['logo.png', 'bg.mp4', 'favicon.ico', 'apple-touch-icon.png'],
       manifest: {
         name: 'Moneta Finance Manager',
@@ -39,6 +39,7 @@ export default defineConfig({
         ]
       },
       workbox: {
+        cleanupOutdatedCaches: true,
         maximumFileSizeToCacheInBytes: 30000000,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,mp4}'],
         runtimeCaching: [

@@ -510,23 +510,7 @@ html.dark .new-txn-btn {
 
   /* Transactions Specifics */
   .new-txn-btn {
-    background: #000;
-    color: #fff;
-    border: none;
-    border-radius: 999px;
-    padding: 10px 16px !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px !important;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 14px !important;
-    transition: transform 0.2s;
-  }
-  html.dark .new-txn-btn {
-    background: #fff;
-    color: #000;
+    display: none !important;
   }
   .txn-filters {
     display: flex;
