@@ -5,6 +5,7 @@ import { db } from '../firebase/firebase';
 import { doc, getDoc, collection, getDocs, updateDoc, writeBatch } from 'firebase/firestore';
 import { format } from 'date-fns';
 import type { UserProfile, MonthlySummary } from '../types';
+import { calculateMonthlySavings } from '../utils/finance';
 
 interface LedgerContextType {
   activeMonth: string; // YYYY-MM
@@ -117,7 +118,7 @@ export const LedgerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     for (const [mStr, data] of Object.entries(monthData)) {
       const summaryRef = doc(db, 'users', uid, 'months', mStr);
-      const savings = data.income - data.expense;
+      const savings = calculateMonthlySavings(data.income, data.expense, globalBudget);
 
       // We only add to lifetime savings if it's NOT the current month (since current month is active)
       if (mStr < currentMonthStr) {
@@ -141,7 +142,8 @@ export const LedgerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     // Ensure current month exists even if empty
     if (!monthData[currentMonthStr]) {
       const currentRef = doc(db, 'users', uid, 'months', currentMonthStr);
-      batch.set(currentRef, { income: 0, expense: 0, budget: globalBudget, savings: 0 });
+      const initSavings = calculateMonthlySavings(0, 0, globalBudget);
+      batch.set(currentRef, { income: 0, expense: 0, budget: globalBudget, savings: initSavings });
     }
 
     // Update Profile
@@ -166,7 +168,8 @@ export const LedgerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     let addedSavings = 0;
     if (prevMonthSnap.exists()) {
       const d = prevMonthSnap.data();
-      addedSavings = (d.income || 0) - (d.expense || 0);
+      const mBudget = d.budget || 0;
+      addedSavings = calculateMonthlySavings(d.income || 0, d.expense || 0, mBudget);
 
       // ensure we record the final savings
       await updateDoc(prevMonthRef, { savings: addedSavings });

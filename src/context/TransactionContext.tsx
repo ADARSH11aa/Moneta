@@ -1,10 +1,11 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { db } from '../firebase/firebase';
-import { collection, query, onSnapshot, doc, setDoc, deleteDoc, serverTimestamp, orderBy, increment } from 'firebase/firestore';
+import { collection, query, onSnapshot, doc, setDoc, deleteDoc, getDoc, serverTimestamp, orderBy } from 'firebase/firestore';
 import { useAuth } from './AuthContext';
 import { useLedger } from './LedgerContext';
 import type { Transaction, Shortcut } from '../types';
+import { calculateMonthlySavings } from '../utils/finance';
 
 interface TransactionContextType {
   transactions: Transaction[];
@@ -68,6 +69,31 @@ export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({ c
     };
   }, [currentUser, activeMonth]);
 
+  const updateMonthlySummaryTotals = async (incomeDelta: number, expenseDelta: number) => {
+    if (!currentUser || !activeMonth) return;
+    const summaryRef = doc(db, 'users', currentUser.uid, 'months', activeMonth);
+    const snap = await getDoc(summaryRef);
+    let income = 0;
+    let expense = 0;
+    let budget = 0;
+    if (snap.exists()) {
+      const data = snap.data();
+      income = data.income || 0;
+      expense = data.expense || 0;
+      budget = data.budget || 0;
+    }
+    const newIncome = Math.max(0, income + incomeDelta);
+    const newExpense = Math.max(0, expense + expenseDelta);
+    const newSavings = calculateMonthlySavings(newIncome, newExpense, budget);
+
+    await setDoc(summaryRef, {
+      income: newIncome,
+      expense: newExpense,
+      budget: budget,
+      savings: newSavings
+    }, { merge: true });
+  };
+
   const addTransaction = async (txn: Omit<Transaction, 'id' | 'createdAt'>) => {
     if (!currentUser || !activeMonth) return;
     const newRef = doc(collection(db, 'users', currentUser.uid, 'months', activeMonth, 'transactions'));
@@ -78,13 +104,9 @@ export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({ c
     });
 
     // Update monthly summary
-    const summaryRef = doc(db, 'users', currentUser.uid, 'months', activeMonth);
-    const incAmount = txn.amount;
-    if (txn.type === 'income') {
-      await setDoc(summaryRef, { income: increment(incAmount), savings: increment(incAmount) }, { merge: true });
-    } else if (txn.type === 'expense') {
-      await setDoc(summaryRef, { expense: increment(incAmount), savings: increment(-incAmount) }, { merge: true });
-    }
+    const incDelta = txn.type === 'income' ? txn.amount : 0;
+    const expDelta = txn.type === 'expense' ? txn.amount : 0;
+    await updateMonthlySummaryTotals(incDelta, expDelta);
     await refreshMonths();
   };
 
@@ -94,13 +116,10 @@ export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({ c
     await setDoc(ref, txn, { merge: true });
 
     if (oldTxn && txn.amount !== undefined) {
-      const summaryRef = doc(db, 'users', currentUser.uid, 'months', activeMonth);
       const diff = txn.amount - oldTxn.amount;
-      if (oldTxn.type === 'income') {
-        await setDoc(summaryRef, { income: increment(diff), savings: increment(diff) }, { merge: true });
-      } else if (oldTxn.type === 'expense') {
-        await setDoc(summaryRef, { expense: increment(diff), savings: increment(-diff) }, { merge: true });
-      }
+      const incDelta = oldTxn.type === 'income' ? diff : 0;
+      const expDelta = oldTxn.type === 'expense' ? diff : 0;
+      await updateMonthlySummaryTotals(incDelta, expDelta);
       await refreshMonths();
     }
   };
@@ -110,12 +129,9 @@ export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({ c
     const ref = doc(db, 'users', currentUser.uid, 'months', activeMonth, 'transactions', id);
     await deleteDoc(ref);
 
-    const summaryRef = doc(db, 'users', currentUser.uid, 'months', activeMonth);
-    if (oldTxn.type === 'income') {
-      await setDoc(summaryRef, { income: increment(-oldTxn.amount), savings: increment(-oldTxn.amount) }, { merge: true });
-    } else if (oldTxn.type === 'expense') {
-      await setDoc(summaryRef, { expense: increment(-oldTxn.amount), savings: increment(oldTxn.amount) }, { merge: true });
-    }
+    const incDelta = oldTxn.type === 'income' ? -oldTxn.amount : 0;
+    const expDelta = oldTxn.type === 'expense' ? -oldTxn.amount : 0;
+    await updateMonthlySummaryTotals(incDelta, expDelta);
     await refreshMonths();
   };
 

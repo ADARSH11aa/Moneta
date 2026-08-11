@@ -1,12 +1,15 @@
 import React from 'react';
 import { useLedger } from '../context/LedgerContext';
+import { useFinance } from '../context/FinanceContext';
 import { format, parse } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, ChevronRight, TrendingDown, TrendingUp, PiggyBank } from 'lucide-react';
+import { Calendar, ChevronRight, TrendingDown, TrendingUp, PiggyBank, Target } from 'lucide-react';
 import { useCurrency } from '../hooks/useCurrency';
+import { calculateMonthlySavings } from '../utils/finance';
 
 const LedgerPage: React.FC = () => {
   const { availableMonths, setActiveMonth } = useLedger();
+  const { settings } = useFinance();
   const navigate = useNavigate();
 
   const handleSelectMonth = (monthId: string) => {
@@ -27,6 +30,10 @@ const LedgerPage: React.FC = () => {
           {availableMonths.map((m) => {
             const mDate = parse(m.id, 'yyyy-MM', new Date());
             const isCurrent = m.id === format(new Date(), 'yyyy-MM');
+            const activeSettingBudget = (settings.globalBudget || 0) + (settings.extraBudget || 0);
+            const mBudget = (m.budget || 0) > 0 ? m.budget : (isCurrent ? activeSettingBudget : 0);
+            const mSavings = calculateMonthlySavings(m.income, m.expense, mBudget);
+            const remainingBudget = mBudget - m.expense;
             
             return (
               <div 
@@ -64,9 +71,15 @@ const LedgerPage: React.FC = () => {
                     <p style={{ margin: '0 0 4px 0', fontSize: '13px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}><TrendingDown size={14} color="#ef4444" /> Expense</p>
                     <div style={{ fontSize: '18px', fontWeight: 700 }}>{fmt(m.expense)}</div>
                   </div>
+                  {mBudget > 0 && (
+                    <div>
+                      <p style={{ margin: '0 0 4px 0', fontSize: '13px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}><Target size={14} color="#6366f1" /> Budget Balance</p>
+                      <div style={{ fontSize: '18px', fontWeight: 700, color: remainingBudget >= 0 ? '#10b981' : '#ef4444' }}>{fmt(remainingBudget)}</div>
+                    </div>
+                  )}
                   <div>
                     <p style={{ margin: '0 0 4px 0', fontSize: '13px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}><PiggyBank size={14} color="#3b82f6" /> Savings</p>
-                    <div style={{ fontSize: '18px', fontWeight: 700, color: m.savings >= 0 ? '#10b981' : '#ef4444' }}>{fmt(m.savings)}</div>
+                    <div style={{ fontSize: '18px', fontWeight: 700, color: mSavings >= 0 ? '#10b981' : '#ef4444' }}>{fmt(mSavings)}</div>
                   </div>
                 </div>
               </div>

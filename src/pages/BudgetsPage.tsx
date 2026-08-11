@@ -2,18 +2,23 @@ import React, { useState, useMemo } from 'react';
 import { useFinance } from '../context/FinanceContext';
 import { useTransactions } from '../context/TransactionContext';
 import { useLedger } from '../context/LedgerContext';
+import { useAuth } from '../context/AuthContext';
+import { db } from '../firebase/firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { Edit2, Target, PiggyBank, Save, X, Plus } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, AreaChart, Area, XAxis, CartesianGrid } from 'recharts';
 import { format, startOfMonth, eachDayOfInterval, endOfMonth, parse } from 'date-fns';
 import { useCurrency } from '../hooks/useCurrency';
 import { useToast } from '../context/ToastContext';
+import { calculateMonthlySavings } from '../utils/finance';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'];
 
 const BudgetsPage: React.FC = () => {
   const { settings, updateSettings } = useFinance();
   const { transactions } = useTransactions();
-  const { profile, activeMonth, updateProfile } = useLedger();
+  const { profile, activeMonth, updateProfile, refreshMonths } = useLedger();
+  const { currentUser } = useAuth();
   
   const [isEditing, setIsEditing] = useState(false);
   const [budgetVal, setBudgetVal] = useState('');
@@ -29,13 +34,34 @@ const BudgetsPage: React.FC = () => {
   };
 
   const handleSave = async () => {
+    const newGlobal = Number(budgetVal);
+    const newExtra = Number(extraVal);
+    const effBudget = newGlobal + newExtra;
+
     await updateSettings({
-      globalBudget: Number(budgetVal),
-      extraBudget: Number(extraVal),
+      globalBudget: newGlobal,
+      extraBudget: newExtra,
     });
     await updateProfile({
       lifetimeSavings: Number(savingsVal),
     });
+
+    if (currentUser && activeMonth) {
+      const summaryRef = doc(db, 'users', currentUser.uid, 'months', activeMonth);
+      const snap = await getDoc(summaryRef);
+      if (snap.exists()) {
+        const d = snap.data();
+        const inc = d.income || 0;
+        const exp = d.expense || 0;
+        const newSavings = calculateMonthlySavings(inc, exp, effBudget);
+        await setDoc(summaryRef, {
+          budget: effBudget,
+          savings: newSavings
+        }, { merge: true });
+        await refreshMonths();
+      }
+    }
+
     setIsEditing(false);
     success('Budget & Savings updated successfully');
   };
