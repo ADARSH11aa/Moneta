@@ -90,26 +90,6 @@ npm install
 # Start the dev server
 npm run dev
 ```
-
-## Firebase Setup
-
-1. Create a project at [Firebase Console](https://console.firebase.google.com/)
-2. Enable **Authentication**, **Cloud Firestore**, and **Storage**
-3. Create `src/firebase/firebase.ts` and add your Firebase config:
-
-```ts
-export const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID",
-};
-```
-
-Can be deployed via **Firebase Hosting**, **Vercel**, or **Netlify**.
-
 ## Building for Android & iOS
 
 ```bash
